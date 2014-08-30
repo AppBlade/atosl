@@ -1107,29 +1107,13 @@ int lipo_to_tempfile(int *fd_ref, uint32_t magic, struct fat_arch_t arch)
 
     //create tempfile
     int ret;
-    uint32_t n;
 
-    n = mrand48();    // #1
-    n = rand();       // #2
-
-    FILE * f = fopen("/dev/urandom", "rb");
-    fread(&n, sizeof(uint32_t), 1, f);  // #3
-
-    char TEMPLATE[19];
-    sprintf(TEMPLATE, "/tmp/atosl%08X", n);
-
-    int template_len = strlen(TEMPLATE)+1;
-    char *thin_output_file = malloc(template_len);
-    if (thin_output_file == NULL)
-        fatal("couldn't malloc space for tempfilename");
-    strncpy(thin_output_file, TEMPLATE, template_len);
+    char thin_output_file[] = "/tmp/atosl.XXXXXX";
     int thin_fd = mkstemp(thin_output_file);
 
     //dispose of the file after we close it.
     if (unlink(thin_output_file) != 0)
         fatal("can't unlink file");
-
-    free(thin_output_file);
 
     if (thin_fd < 0)
         fatal("can't create tempfile");
