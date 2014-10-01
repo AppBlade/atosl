@@ -562,6 +562,7 @@ int print_symtab_symbol(Dwarf_Addr slide, Dwarf_Addr addr)
     struct symbol_t *current;
     struct function_t *func;
     char *demangled = NULL;
+    const char *closest_name = NULL;
     int found = 0;
 
     int i;
@@ -570,12 +571,29 @@ int print_symtab_symbol(Dwarf_Addr slide, Dwarf_Addr addr)
     addr = addr - slide;
     current = context.symlist;
 
+    unsigned int lowest_offset = UINT_MAX;
+
     for (i = 0; i < context.nsymbols; i++) {
 
         memcpy(context.is_64 ? (void*)&nlist.nlist64 : (void*)&nlist.nlist32, context.is_64 ? (void*)&current->sym.sym64 : (void*)&current->sym.sym32, context.is_64 ? sizeof(current->sym.sym64) : sizeof(current->sym.sym32));
         current->thumb = ((context.is_64 ? nlist.nlist64.n_desc : nlist.nlist32.n_desc) & N_ARM_THUMB_DEF) ? 1 : 0;
 
         current->addr = context.is_64 ? nlist.nlist64.n_value : nlist.nlist32.n_value;
+        
+        if (addr > current->addr) {
+            unsigned int offset = (unsigned int)(addr - current->addr);
+            if (offset < lowest_offset) {
+                
+                lowest_offset = offset;
+                
+                demangled = demangle(current->name);
+                closest_name = demangled ? demangled : current->name;
+
+                if (closest_name[0] == '_')
+                    closest_name++;
+            }
+        }
+        
         if (debug) {
             fprintf(stderr, "\t\tname: %s\n", current->name);
             fprintf(stderr, "\t\tn_un.n_un.n_strx: %d\n", context.is_64 ? nlist.nlist64.n_un.n_strx : nlist.nlist32.n_un.n_strx);
@@ -656,6 +674,11 @@ int print_symtab_symbol(Dwarf_Addr slide, Dwarf_Addr addr)
         }
 
         func++;
+    }
+
+    if (found == 0 && closest_name != NULL) {
+        printf("%s + %d\n", closest_name, lowest_offset);
+        found = 1;
     }
 
     return found ? DW_DLV_OK : DW_DLV_NO_ENTRY;
@@ -750,6 +773,10 @@ static int dwarf_mach_object_access_internals_init(
         case MH_DYLIB:
             if (debug)
                 fprintf(stderr, "File type: dynamic library\n");
+            break;
+        case MH_DYLIB_STUB:
+            if (debug)
+                fprintf(stderr, "File type: dynamic library stub\n");
             break;
         case MH_EXECUTE:
             if (debug)
