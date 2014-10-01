@@ -624,7 +624,7 @@ int print_symtab_symbol(Dwarf_Addr slide, Dwarf_Addr addr)
             struct symbol_t *sym = NULL;
             int found_sym = 0;
             const char *name;
-            assert(i < context.nsymbols);
+            //assert(i < context.nsymbols);
 
             for (j = 0; j < context.nsymbols; j++) {
                 sym = context.symlist + j;
