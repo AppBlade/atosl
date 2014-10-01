@@ -20,6 +20,7 @@
 #define MH_DYLIB 0x6
 #define MH_DSYM 0xa
 #define MH_EXECUTE 0x2
+#define MH_DYLIB_STUB 0x9
 
 #define LC_SEGMENT 0x1
 #define LC_SYMTAB 0x2
