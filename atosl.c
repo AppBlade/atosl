@@ -1133,7 +1133,7 @@ int print_dwarf_symbol(Dwarf_Debug dbg, Dwarf_Addr slide, Dwarf_Addr addr)
         }
     }
 
-    dwarf_dealloc(dbg, arange, DW_DLA_ARANGE);
+    //dwarf_dealloc(dbg, arange, DW_DLA_ARANGE);
     dwarf_srclines_dealloc(dbg, linebuf, linecount);
 
     return found ? DW_DLV_OK : DW_DLV_NO_ENTRY;
