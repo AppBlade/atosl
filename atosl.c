@@ -591,6 +591,9 @@ int print_symtab_symbol(Dwarf_Addr slide, Dwarf_Addr addr)
 
                 if (closest_name[0] == '_')
                     closest_name++;
+
+                if (demangled)
+                    free(demangled);
             }
         }
         
